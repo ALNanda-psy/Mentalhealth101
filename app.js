@@ -295,7 +295,7 @@ const App = {
         pmr: () => `
             <button class="back-btn" id="btn-back-relax"><i data-feather="arrow-left"></i> Back</button>
             <div class="glass-panel slide-up text-center" style="min-height: 400px; display: flex; flex-direction: column; justify-content: center; position: relative;">
-                <div id="pmr-text" style="font-size: 1.25rem; line-height: 1.8; transition: opacity 0.5s;">
+                <div id="pmr-text" style="font-size: 1.25rem; line-height: 1.8; transition: opacity 3s ease-in-out;">
                     <h2>Progressive Muscle Relaxation</h2>
                     <p>Find a comfortable position.</p>
                 </div>
@@ -304,6 +304,7 @@ const App = {
                     <div class="progress-fill" style="width: 0%;"></div>
                 </div>
             </div>
+            <audio id="bg-audio" loop src="https://cdn.pixabay.com/download/audio/2022/10/09/audio_6c7cfeb60b.mp3"></audio>
         `,
 
         breathing: () => `
@@ -376,42 +377,51 @@ const App = {
     bindPMREvents(el) {
         el.querySelector('#btn-back-relax').onclick = () => {
             clearTimeout(this.pmrTimer);
+            window.speechSynthesis.cancel();
+            const bgAudio = el.querySelector('#bg-audio');
+            if (bgAudio) {
+                bgAudio.pause();
+                bgAudio.currentTime = 0;
+            }
             this.navigate('relaxation');
         };
         
+        // preload voices
+        window.speechSynthesis.getVoices();
+        
         const script = [
-            { text: "Now let's begin. Tighten the muscles in your forehead by raising your eyebrows as high as you can. Hold for about five seconds. And abruptly release feeling that tension fall away.", time: 8000 },
-            { text: "Pause and just breath...", time: 6000 },
-            { text: "Now smile widely, feeling your mouth and cheeks tense. Hold for about 5 seconds, and release, appreciating the softness in your face.", time: 8000 },
-            { text: "Pause and just breath...", time: 6000 },
-            { text: "Now feel the weight of your relaxed head and neck sink.", time: 4000 },
-            { text: "Breath in... and breath out...", time: 5000 },
-            { text: "Let go of all the stress...", time: 4000 },
-            { text: "Now, tightly, but without straining, clench your right fist and hold this position for about 5 seconds... and release.", time: 8000 },
-            { text: "Pause and just breath...", time: 6000 },
-            { text: "Now, feel the tension in your right forearm and hand. Feel that buildup of tension. You may even visualize that set of muscles tightening.", time: 8000 },
-            { text: "Hold for about 5 seconds... and release, enjoying that feeling of limpness.", time: 6000 },
-            { text: "Now, feel the tension in your entire right arm. Feel that buildup of tension. Tense your entire right arm.", time: 7000 },
-            { text: "Hold for about 5 seconds, and release.", time: 5000 },
-            { text: "Now lift your shoulders up as if they could touch your ears. Hold for about 5 seconds, and quickly release, feeling their heaviness.", time: 8000 },
-            { text: "Pause and just breath...", time: 6000 },
-            { text: "Now, tightly clench your left fist and hold this position for about 5 seconds... and release.", time: 8000 },
-            { text: "Pause and just breath...", time: 6000 },
-            { text: "Now, feel the tension in your left forearm and hand. You may even visualize that set of muscles tightening. Hold for 5 seconds, and release.", time: 9000 },
-            { text: "Tense your upper back by pulling your shoulders back trying to make your shoulder blades touch. Hold for about 5 seconds, and release.", time: 8000 },
-            { text: "Tighten your chest by taking a deep breath in, hold for about 5 seconds, and exhale, blowing out all the tension.", time: 8000 },
-            { text: "Now tighten the muscles in your stomach by sucking in. Hold for about 5 seconds, and release.", time: 7000 },
-            { text: "Gently arch your lower back. Hold for about 5 seconds... and relax.", time: 7000 },
-            { text: "Feel the limpness in your upper body letting go of the tension and stress.", time: 5000 },
-            { text: "Tighten your buttocks. Hold for about 5 seconds... and release, imagine your hips falling loose.", time: 7000 },
-            { text: "Feel the tension in your entire right leg and thigh. Hold for about 5 seconds... and relax.", time: 8000 },
-            { text: "Now flex your right foot, pulling your toes towards you and feeling the tension in your calves. Hold for 5 seconds... and relax.", time: 8000 },
-            { text: "Feel the tension in your entire left leg and thigh. Hold for about 5 seconds... and relax.", time: 8000 },
-            { text: "Curl your toes under tensing your feet. Hold for about 5 seconds, and release.", time: 7000 },
-            { text: "Now imagine a wave of relaxation slowly spreading through your body beginning at your head and going all the way down to your feet.", time: 8000 },
-            { text: "Your body is completely relaxed. Breath in... and breath out...", time: 6000 },
-            { text: "As you exhale, imagine the tension in your body being released and flowing out of your body.", time: 6000 },
-            { text: "Feel your body fully relaxed now. You are done and feeling completely relaxed.", time: 5000 }
+            { text: "Now let's begin. Tighten the muscles in your forehead by raising your eyebrows as high as you can. Hold for about five seconds. And abruptly release feeling that tension fall away.", time: 12000 },
+            { text: "Pause and just breathe...", time: 9000 },
+            { text: "Now smile widely, feeling your mouth and cheeks tense. Hold for about 5 seconds, and release, appreciating the softness in your face.", time: 12000 },
+            { text: "Pause and just breathe...", time: 9000 },
+            { text: "Now feel the weight of your relaxed head and neck sink.", time: 6000 },
+            { text: "Breathe in... and breathe out...", time: 8000 },
+            { text: "Let go of all the stress...", time: 6000 },
+            { text: "Now, tightly, but without straining, clench your right fist and hold this position for about 5 seconds... and release.", time: 12000 },
+            { text: "Pause and just breathe...", time: 9000 },
+            { text: "Now, feel the tension in your right forearm and hand. Feel that buildup of tension. You may even visualize that set of muscles tightening.", time: 12000 },
+            { text: "Hold for about 5 seconds... and release, enjoying that feeling of limpness.", time: 9000 },
+            { text: "Now, feel the tension in your entire right arm. Feel that buildup of tension. Tense your entire right arm.", time: 10500 },
+            { text: "Hold for about 5 seconds, and release.", time: 7500 },
+            { text: "Now lift your shoulders up as if they could touch your ears. Hold for about 5 seconds, and quickly release, feeling their heaviness.", time: 12000 },
+            { text: "Pause and just breathe...", time: 9000 },
+            { text: "Now, tightly clench your left fist and hold this position for about 5 seconds... and release.", time: 12000 },
+            { text: "Pause and just breathe...", time: 9000 },
+            { text: "Now, feel the tension in your left forearm and hand. You may even visualize that set of muscles tightening. Hold for 5 seconds, and release.", time: 13500 },
+            { text: "Tense your upper back by pulling your shoulders back trying to make your shoulder blades touch. Hold for about 5 seconds, and release.", time: 12000 },
+            { text: "Tighten your chest by taking a deep breath in, hold for about 5 seconds, and exhale, blowing out all the tension.", time: 12000 },
+            { text: "Now tighten the muscles in your stomach by sucking in. Hold for about 5 seconds, and release.", time: 10500 },
+            { text: "Gently arch your lower back. Hold for about 5 seconds... and relax.", time: 10500 },
+            { text: "Feel the limpness in your upper body letting go of the tension and stress.", time: 7500 },
+            { text: "Tighten your buttocks. Hold for about 5 seconds... and release, imagine your hips falling loose.", time: 10500 },
+            { text: "Feel the tension in your entire right leg and thigh. Hold for about 5 seconds... and relax.", time: 12000 },
+            { text: "Now flex your right foot, pulling your toes towards you and feeling the tension in your calves. Hold for 5 seconds... and relax.", time: 12000 },
+            { text: "Feel the tension in your entire left leg and thigh. Hold for about 5 seconds... and relax.", time: 12000 },
+            { text: "Curl your toes under tensing your feet. Hold for about 5 seconds, and release.", time: 10500 },
+            { text: "Now imagine a wave of relaxation slowly spreading through your body beginning at your head and going all the way down to your feet.", time: 12000 },
+            { text: "Your body is completely relaxed. Breathe in... and breathe out...", time: 9000 },
+            { text: "As you exhale, imagine the tension in your body being released and flowing out of your body.", time: 9000 },
+            { text: "Feel your body fully relaxed now. You are done and feeling completely relaxed.", time: 7500 }
         ];
 
         el.querySelector('#btn-start-pmr').onclick = (e) => {
@@ -419,13 +429,24 @@ const App = {
             const textEl = el.querySelector('#pmr-text');
             const progBar = el.querySelector('#pmr-progress');
             const progFill = progBar.querySelector('.progress-fill');
+            const bgAudio = el.querySelector('#bg-audio');
+            
             progBar.style.display = 'block';
+
+            if (bgAudio) {
+                bgAudio.volume = 0.15; // Soft background noise
+                bgAudio.play().catch(err => console.warn('Audio play failed', err));
+            }
 
             let step = 0;
             const nextStep = () => {
                 if (step >= script.length) {
                     textEl.innerHTML = `<h2>Complete</h2><p>You are fully relaxed.</p>`;
-                    setTimeout(() => this.navigate('relaxation'), 4000);
+                    setTimeout(() => {
+                        window.speechSynthesis.cancel();
+                        if (bgAudio) bgAudio.pause();
+                        this.navigate('relaxation');
+                    }, 4000);
                     return;
                 }
                 
@@ -435,11 +456,29 @@ const App = {
                     textEl.style.opacity = 1;
                     progFill.style.width = `${((step + 1) / script.length) * 100}%`;
                     
+                    // ASMR style voice setup
+                    window.speechSynthesis.cancel(); // Stop any previous ongoing speech just in case
+                    const msg = new SpeechSynthesisUtterance(script[step].text);
+                    msg.volume = 0.25; // very soft
+                    msg.rate = 0.65; // much slower
+                    msg.pitch = 0.5; // lower pitch for male voice
+                    
+                    let voices = window.speechSynthesis.getVoices();
+                    let preferredVoice = voices.find(v => v.name.includes('Daniel') || v.name.includes('Oliver') || v.name.includes('Alex') || v.name.includes('Google UK English Male') || (v.lang === 'en-US' && v.name.includes('Male')));
+                    if (!preferredVoice) {
+                        preferredVoice = voices.find(v => !v.name.includes('Female') && v.lang.startsWith('en'));
+                    }
+                    if (preferredVoice) {
+                        msg.voice = preferredVoice;
+                    }
+                    
+                    window.speechSynthesis.speak(msg);
+                    
                     this.pmrTimer = setTimeout(() => {
                         step++;
                         nextStep();
                     }, script[step].time);
-                }, 500);
+                }, 3000); // Much slower visual transition
             };
             nextStep();
         };
@@ -449,6 +488,7 @@ const App = {
         let breathingInterval;
         el.querySelector('#btn-back-relax').onclick = () => {
             clearInterval(breathingInterval);
+            window.speechSynthesis.cancel();
             this.navigate('relaxation');
         };
 
@@ -456,22 +496,45 @@ const App = {
         const text = el.querySelector('#b-text');
         const btn = el.querySelector('#btn-start-breath');
 
+        // preload voices
+        window.speechSynthesis.getVoices();
+
         btn.onclick = () => {
             btn.style.display = 'none';
+            
+            const speak = (words) => {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(words);
+                msg.volume = 0.3;
+                msg.rate = 0.65; // slow
+                msg.pitch = 0.5; // low pitch
+                
+                let voices = window.speechSynthesis.getVoices();
+                let preferredVoice = voices.find(v => v.name.includes('Daniel') || v.name.includes('Oliver') || v.name.includes('Alex') || v.name.includes('Google UK English Male') || (v.lang === 'en-US' && v.name.includes('Male')));
+                if (!preferredVoice) {
+                    preferredVoice = voices.find(v => !v.name.includes('Female') && v.lang.startsWith('en'));
+                }
+                if (preferredVoice) msg.voice = preferredVoice;
+                
+                window.speechSynthesis.speak(msg);
+            };
             
             const breathe = () => {
                 // Inhale 4s
                 text.textContent = 'Inhale...';
+                speak('Breathe in slowly...');
                 circle.style.transition = 'transform 4s linear';
                 circle.style.transform = 'scale(1.5)';
                 
                 setTimeout(() => {
                     // Hold 7s
                     text.textContent = 'Hold...';
+                    speak('Hold your breath...');
                     
                     setTimeout(() => {
                         // Exhale 8s
                         text.textContent = 'Exhale...';
+                        speak('Exhale slowly...');
                         circle.style.transition = 'transform 8s linear';
                         circle.style.transform = 'scale(1)';
                     }, 7000);
